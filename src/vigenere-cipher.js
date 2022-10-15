@@ -22,6 +22,7 @@ const { NotImplementedError } = require('../extensions/index.js');
 
 class VigenereCipheringMachine {
   reverse = false;
+  initCode = 'A'.charCodeAt(0);
 
   constructor(isReverse) {
     if (isReverse === false) {
@@ -30,19 +31,17 @@ class VigenereCipheringMachine {
   }
 
   encrypt(str, key) {
-
-    if (!str || !key) throw new Error('Incorrect arguments!')
+    this.checkArguments(str, key)
 
     key = key.toUpperCase();
     str = str.toUpperCase();
   
-    const initCode = 'A'.charCodeAt(0);
     let resStr = '';
     
     let j = 0;
     for (let i = 0; i < str.length; i++, j++) {
   
-      if (str[i].charCodeAt(0) < 65 || str[i].charCodeAt(0) > 90) {
+      if (this.isCharNotLetter(str[i])) {
         j--;
         resStr += str[i];
         continue;
@@ -53,7 +52,7 @@ class VigenereCipheringMachine {
       const keyCode = key[j].charCodeAt(0);
       const strCode = str[i].charCodeAt(0);
     
-      let resCharCode = (keyCode + strCode)%26 + initCode;
+      let resCharCode = (keyCode + strCode)%26 + this.initCode;
     
       const resChar = String.fromCharCode(resCharCode);
       resStr += resChar;
@@ -64,18 +63,17 @@ class VigenereCipheringMachine {
 
   decrypt(secretString, key) {
 
-    if (!secretString || !key) throw new Error('Incorrect arguments!')
+    this.checkArguments(secretString, key)
   
     key = key.toUpperCase();
     secretString = secretString.toUpperCase();
   
-    const initCode = 'A'.charCodeAt(0);
     let resStr = '';
     
     let j = 0;
     for (let i = 0; i < secretString.length; i++, j++) {
   
-      if (secretString[i].charCodeAt(0) < 65 || secretString[i].charCodeAt(0) > 90) {
+      if (this.isCharNotLetter(secretString[i])) {
         j--;
         resStr += secretString[i];
         continue;
@@ -88,11 +86,10 @@ class VigenereCipheringMachine {
       
       let resCharCode;
       if (keyCode <= secretStrCode) {
-        resCharCode = Math.abs((keyCode - secretStrCode)%26) + initCode;
+        resCharCode = Math.abs((keyCode - secretStrCode)%26) + this.initCode;
       } else {
         resCharCode = 90 - (keyCode - secretStrCode - 1);
       }
-      
     
       const resChar = String.fromCharCode(resCharCode);
       resStr += resChar;
@@ -101,8 +98,16 @@ class VigenereCipheringMachine {
     return this.proceedReverse(resStr);
   }
 
+  checkArguments(str, key) {
+    if (!str || !key) throw new Error('Incorrect arguments!')
+  }
+
   proceedReverse(resStr) {
     return this.reverse ? resStr.split('').reverse().join('') : resStr;
+  }
+
+  isCharNotLetter(str) {
+    return str.charCodeAt(0) < 65 || str.charCodeAt(0) > 90;
   }
 }
 
